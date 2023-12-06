@@ -1,5 +1,6 @@
 package dev.patika.PatikaVeterinaryManagementSystem.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
@@ -45,8 +46,10 @@ public class Animal {
     private Customer customer;
 
     @OneToMany(mappedBy = "animal")
+    @JsonIgnore
     private List<Vaccine> vaccineList;
 
     @OneToMany(mappedBy = "animal")
+    @JsonIgnore
     private List<Appointment> appointmentList;
 }
