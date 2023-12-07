@@ -3,13 +3,15 @@ package dev.patika.PatikaVeterinaryManagementSystem.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "Vaccines")
+@Table(name = "Vaccine")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,22 +22,27 @@ public class Vaccine {
     private Long id;
 
     @Column(name = "vaccine_name", nullable = false)
+    @NotNull
     private String name;
 
     @Column(name = "vaccine_code", nullable = false)
+    @NotNull
     private String code;
 
     @Temporal(TemporalType.DATE)
-    @FutureOrPresent
+    @NotNull
+    @PastOrPresent
     @Column(name = "vaccine_protection_start_date", nullable = false)
     private LocalDate protectionStartDate;
 
     @Temporal(TemporalType.DATE)
-    @Future
+    @NotNull
+    @FutureOrPresent
     @Column(name = "vaccine_protection_finish_date", nullable = false)
     private LocalDate protectionFinishDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
     @JoinColumn(name = "vaccine_animal_id", referencedColumnName = "animal_id")
     private Animal animal;
 }
