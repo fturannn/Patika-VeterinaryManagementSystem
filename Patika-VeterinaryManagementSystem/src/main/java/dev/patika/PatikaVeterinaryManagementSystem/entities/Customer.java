@@ -37,6 +37,5 @@ public class Customer {
     private String city;
 
     @OneToMany(mappedBy = "customer")
-    @JsonIgnore
     private List<Animal> animalList;
 }
