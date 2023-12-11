@@ -24,7 +24,7 @@ public class AvailableDate {
     @FutureOrPresent
     private LocalDate availableDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "available_date_doctor_id", referencedColumnName = "doctor_id")
     private Doctor doctor;
 }

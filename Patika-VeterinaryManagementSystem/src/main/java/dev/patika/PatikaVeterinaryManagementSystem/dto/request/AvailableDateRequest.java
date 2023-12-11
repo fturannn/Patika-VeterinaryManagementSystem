@@ -4,14 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CustomerRequest {
+public class AvailableDateRequest {
     private Long id;
-    private String name;
-    private String phone;
-    private String mail;
-    private String address;
-    private String city;
+    private LocalDate availableDate;
 }

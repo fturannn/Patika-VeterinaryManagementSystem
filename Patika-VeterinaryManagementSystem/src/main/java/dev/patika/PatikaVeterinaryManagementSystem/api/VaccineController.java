@@ -1,7 +1,8 @@
 package dev.patika.PatikaVeterinaryManagementSystem.api;
 
 import dev.patika.PatikaVeterinaryManagementSystem.business.VaccineService;
-import dev.patika.PatikaVeterinaryManagementSystem.entities.Vaccine;
+import dev.patika.PatikaVeterinaryManagementSystem.dto.request.VaccineRequest;
+import dev.patika.PatikaVeterinaryManagementSystem.dto.response.VaccineResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,14 +21,14 @@ public class VaccineController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Vaccine getById(@PathVariable("id") Long id) {
+    public VaccineResponse getById(@PathVariable("id") Long id) {
         return this.vaccineService.getById(id);
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public String save(@RequestBody Vaccine vaccine) {
-        return this.vaccineService.save(vaccine);
+    public VaccineResponse save(@RequestBody VaccineRequest request) {
+        return this.vaccineService.save(request);
     }
 
     @DeleteMapping("/{id}")
@@ -36,22 +37,22 @@ public class VaccineController {
         this.vaccineService.delete(id);
     }
 
-    @PutMapping()
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Vaccine update(@RequestBody Vaccine vaccine) {
-        return this.vaccineService.update(vaccine);
+    public VaccineResponse update(@PathVariable("id") Long id, @RequestBody VaccineRequest request) {
+        return this.vaccineService.update(id, request);
     }
 
-    @GetMapping("/({startDate})-({endDate})")
+    @GetMapping("/upcomings/start={startDate}&end={endDate}")
     @ResponseStatus(HttpStatus.OK)
-    public List<Vaccine> upcomingVaccines(@PathVariable("startDate") LocalDate startDate,
+    public List<VaccineResponse> upcomingVaccines(@PathVariable("startDate") LocalDate startDate,
                                           @PathVariable("endDate") LocalDate endDate) {
         return this.vaccineService.upcomingVaccines(startDate, endDate);
     }
 
-    @GetMapping("/{animalId}")
+    @GetMapping("/animalId={animalId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<Vaccine> getByAnimalId(@PathVariable("animalId") Long animalId) {
+    public List<VaccineResponse> getByAnimalId(@PathVariable("animalId") Long animalId) {
         return this.vaccineService.findByAnimalId(animalId);
     }
 }

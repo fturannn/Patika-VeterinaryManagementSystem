@@ -1,10 +1,13 @@
 package dev.patika.PatikaVeterinaryManagementSystem.api;
 
 import dev.patika.PatikaVeterinaryManagementSystem.business.CustomerService;
+import dev.patika.PatikaVeterinaryManagementSystem.dto.request.CustomerRequest;
+import dev.patika.PatikaVeterinaryManagementSystem.dto.response.CustomerResponse;
 import dev.patika.PatikaVeterinaryManagementSystem.entities.Customer;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -19,31 +22,37 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Customer getById(@PathVariable("id") Long id) {
+    public CustomerResponse getById(@PathVariable("id") Long id) {
         return this.customerService.getById(id);
+    }
+
+    @GetMapping()
+    @ResponseStatus(HttpStatus.OK)
+    public List<CustomerResponse> findAll() {
+        return this.customerService.findAll();
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public Customer save(@RequestBody Customer customer) {
-        return this.customerService.save(customer);
+    public CustomerResponse save(@RequestBody CustomerRequest request) {
+        return this.customerService.save(request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Customer delete(@PathVariable("id") Long id) {
-        return this.delete(id);
+    public void delete(@PathVariable("id") Long id) {
+        this.customerService.delete(id);
     }
 
-    @PutMapping()
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Customer update(@RequestBody Customer customer) {
-        return this.customerService.update(customer);
+    public CustomerResponse update(@PathVariable("id") Long id, @RequestBody CustomerRequest request) {
+        return this.customerService.update(id, request);
     }
 
-    @GetMapping("?name={name}")
+    @GetMapping("/name={name}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<Customer> getByName(@PathVariable("name") String name) {
+    public CustomerResponse getByName(@PathVariable("name") String name) {
         return this.customerService.findByName(name);
     }
 }

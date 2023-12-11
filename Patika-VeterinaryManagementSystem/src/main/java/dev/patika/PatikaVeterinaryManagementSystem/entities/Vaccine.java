@@ -22,27 +22,18 @@ public class Vaccine {
     private Long id;
 
     @Column(name = "vaccine_name", nullable = false)
-    @NotNull
     private String name;
 
     @Column(name = "vaccine_code", nullable = false)
-    @NotNull
     private String code;
 
-    @Temporal(TemporalType.DATE)
-    @NotNull
-    @PastOrPresent
     @Column(name = "vaccine_protection_start_date", nullable = false)
     private LocalDate protectionStartDate;
 
-    @Temporal(TemporalType.DATE)
-    @NotNull
-    @FutureOrPresent
     @Column(name = "vaccine_protection_finish_date", nullable = false)
     private LocalDate protectionFinishDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "vaccine_animal_id", referencedColumnName = "animal_id")
     private Animal animal;
 }

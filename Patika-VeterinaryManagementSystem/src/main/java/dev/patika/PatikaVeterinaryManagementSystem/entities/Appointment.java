@@ -23,11 +23,11 @@ public class Appointment {
     @FutureOrPresent
     private LocalDateTime appointmentDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "appointment_animal_id", referencedColumnName = "animal_id")
     private Animal animal;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "appointment_doctor_id", referencedColumnName = "doctor_id")
     private Doctor doctor;
 }

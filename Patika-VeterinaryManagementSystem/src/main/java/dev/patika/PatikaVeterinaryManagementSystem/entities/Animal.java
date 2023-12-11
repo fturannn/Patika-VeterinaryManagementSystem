@@ -2,6 +2,7 @@ package dev.patika.PatikaVeterinaryManagementSystem.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,15 +34,15 @@ public class Animal {
     @Column(name = "animal_gender", nullable = false)
     private String gender;
 
-    @Column(name = "animal_colour")
+    @Column(name = "animal_colour", nullable = false)
     private String colour;
 
     @Temporal(TemporalType.DATE)
     @Past
-    @Column(name = "animal_birth_date")
+    @Column(name = "animal_birth_date", nullable = false)
     private LocalDate dateOfBirth;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "animal_customer_id", referencedColumnName = "customer_id")
     private Customer customer;
 
