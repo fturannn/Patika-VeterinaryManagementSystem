@@ -1,6 +1,7 @@
 package dev.patika.PatikaVeterinaryManagementSystem.dao;
 
 import dev.patika.PatikaVeterinaryManagementSystem.entities.Animal;
+import dev.patika.PatikaVeterinaryManagementSystem.entities.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,10 @@ import java.util.Optional;
 public interface AnimalRepository extends JpaRepository<Animal, Long> {
     Optional<Animal> findByName(String name);
 
-    @Query("SELECT c.animalList FROM Customer c WHERE c.name = :customerName")
-    List<Animal> findAnimalsByCustomerName(@Param("customerName") String customerName);
+    @Query("FROM Customer c WHERE c.id = :id")
+    Optional<Customer> findCustomerByCustomerId(@Param("id") Long id);
+
+    Optional<Animal> findByNameAndSpeciesAndBreed(String name, String species, String breed);
+
+    List<Animal> findByCustomerName(String customerName);
 }

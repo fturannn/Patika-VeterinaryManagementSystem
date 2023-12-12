@@ -1,5 +1,11 @@
 package dev.patika.PatikaVeterinaryManagementSystem.business;
 
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.DuplicationException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.NotFoundException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.Result;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultHelper;
+import dev.patika.PatikaVeterinaryManagementSystem.core.utilies.Message;
 import dev.patika.PatikaVeterinaryManagementSystem.dao.CustomerRepository;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.CustomerRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.CustomerResponse;
@@ -21,52 +27,36 @@ public class CustomerService {
         this.customerMapper = customerMapper;
     }
 
-    public CustomerResponse getById(Long id) {
-        Optional<Customer> isCustomerExist = this.customerRepository.findById(id);
-        if(isCustomerExist.isPresent()) {
-            return customerMapper.asOutput(customerRepository.findById(id).orElseThrow());
-        }
-        throw new RuntimeException("Girdiğiniz ID'ye sahip bir müşteri bulunamadı.");
+    public ResultData<CustomerResponse> getById(Long id) {
+        return ResultHelper.success(customerMapper.asOutput(customerRepository.findById(id).orElseThrow(() ->
+                    new NotFoundException(Message.NOT_FOUND))));
     }
 
-    public CustomerResponse save(CustomerRequest request) {
+    public ResultData<CustomerResponse> save(CustomerRequest request) {
         Optional<Customer> isCustomerExist = this.customerRepository.findByNameAndPhone(request.getName(), request.getPhone());
         if(isCustomerExist.isEmpty()) {
-            return this.customerMapper.asOutput(this.customerRepository.save(customerMapper.asEntity(request)));
+            return ResultHelper.created(this.customerMapper.asOutput(this.customerRepository.save(customerMapper.asEntity(request))));
         }
-        throw new RuntimeException("Eklemeye çalıştığınız müşteri daha önce eklenmiş.");
+        throw new DuplicationException("Eklemeye çalıştığınız müşteri daha önce eklenmiş");
     }
 
     public void delete(Long id) {
-        Optional<Customer> isCustomerExist = customerRepository.findById(id);
-        if(isCustomerExist.isPresent()) {
-            customerRepository.delete(isCustomerExist.get());
-        } else {
-            throw new RuntimeException(id + " id'li müşteri bulunamadı.");
-        }
+        customerRepository.delete(customerRepository.findById(id).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND)));
     }
 
-    public CustomerResponse update(Long id, CustomerRequest request) {
-        Optional<Customer> customerFromDb = customerRepository.findById(id);
-        if(customerFromDb.isEmpty()) {
-            throw new RuntimeException("Güncellemeye çalıştığınız müşteri sistemde bulunamadı.");
-        } else {
-            Customer customer = customerFromDb.get();
-            customerMapper.update(customer, request);
-            return this.customerMapper.asOutput(this.customerRepository.save(customer));
-        }
+    public ResultData<CustomerResponse> update(Long id, CustomerRequest request) {
+        Customer customer = customerRepository.findById(id).orElseThrow(() -> new NotFoundException(Message.NOT_FOUND));
+        customerMapper.update(customer, request);
+        return ResultHelper.success(this.customerMapper.asOutput(this.customerRepository.save(customer)));
     }
 
-    public List<CustomerResponse> findAll() {
-        return this.customerMapper.asOutput(this.customerRepository.findAll());
+    public ResultData<List<CustomerResponse>> findAll() {
+        return ResultHelper.success(this.customerMapper.asOutput(this.customerRepository.findAll()));
     }
 
-    public CustomerResponse findByName(String name) {
-        Optional<Customer> customerFromDb = customerRepository.findByName(name);
-        if (customerFromDb.isEmpty()) {
-            throw new RuntimeException(name + " isimli müşteri sistemde bulunamadı.");
-        } else {
-            return customerMapper.asOutput(customerRepository.findByName(name).orElseThrow());
-        }
+    public ResultData<CustomerResponse> findByName(String name) {
+        return ResultHelper.success(customerMapper.asOutput(customerRepository.findByName(name).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND))));
     }
 }

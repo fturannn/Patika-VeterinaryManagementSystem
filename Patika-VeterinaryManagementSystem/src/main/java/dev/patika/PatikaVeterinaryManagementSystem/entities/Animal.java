@@ -43,14 +43,14 @@ public class Animal {
     private LocalDate dateOfBirth;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "animal_customer_id", referencedColumnName = "customer_id")
+    @JoinColumn(name = "animal_customer_id", referencedColumnName = "customer_id", nullable = false)
     private Customer customer;
 
-    @OneToMany(mappedBy = "animal")
+    @OneToMany(mappedBy = "animal", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Vaccine> vaccineList;
 
-    @OneToMany(mappedBy = "animal")
+    @OneToMany(mappedBy = "animal", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Appointment> appointmentList;
 }

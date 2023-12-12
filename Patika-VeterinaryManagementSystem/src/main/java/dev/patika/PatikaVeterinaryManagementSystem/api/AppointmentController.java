@@ -1,12 +1,14 @@
 package dev.patika.PatikaVeterinaryManagementSystem.api;
 
 import dev.patika.PatikaVeterinaryManagementSystem.business.AppointmentService;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.AppointmentRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.AppointmentResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -21,14 +23,20 @@ public class AppointmentController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public AppointmentResponse getById(@PathVariable("id") Long id) {
+    public ResultData<AppointmentResponse> getById(@PathVariable("id") Long id) {
         return this.appointmentService.getById(id);
     }
 
-    @PostMapping("/date={date}&hour={hour}")
+    @GetMapping()
+    @ResponseStatus(HttpStatus.OK)
+    public  ResultData<List<AppointmentResponse>> findAll() {
+        return this.appointmentService.findAll();
+    }
+
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public AppointmentResponse save(@PathVariable("date") LocalDate date, @PathVariable("hour") String hour, @RequestBody AppointmentRequest request) {
-        return this.appointmentService.save(date, hour, request);
+    public ResultData<AppointmentResponse> save(@RequestBody AppointmentRequest request) {
+        return this.appointmentService.save(request);
     }
 
     @DeleteMapping("/{id}")
@@ -39,23 +47,23 @@ public class AppointmentController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public AppointmentResponse update(@PathVariable("id") Long id, @RequestBody AppointmentRequest request) {
+    public ResultData<AppointmentResponse> update(@PathVariable("id") Long id, @RequestBody AppointmentRequest request) {
         return this.appointmentService.update(id, request);
     }
 
-    @GetMapping("/doctor={doctor}&startDate={appointmentDateStart}&endDate={appointmentDateEnd}")
+    @GetMapping("/doctorId")
     @ResponseStatus(HttpStatus.OK)
-    public List<AppointmentResponse> appointmentListByDoctorAndDateRange (@PathVariable("doctor") String doctorName,
-                                                                          @PathVariable("appointmentDateStart") LocalDate appointmentDateStart,
-                                                                          @PathVariable("appointmentDateEnd") LocalDate appointmentDateEnd) {
-        return this.appointmentService.appointmentListByDoctorAndDateRange(doctorName, appointmentDateStart, appointmentDateEnd);
+    public ResultData<List<AppointmentResponse>> appointmentListByDoctorAndDateRange (@RequestParam("doctorId") Long doctorId,
+                                                                          @RequestParam("appointmentDateStart") LocalDate appointmentDateStart,
+                                                                          @RequestParam("appointmentDateEnd") LocalDate appointmentDateEnd) {
+        return this.appointmentService.appointmentListByDoctorAndDateRange(doctorId, appointmentDateStart, appointmentDateEnd);
     }
 
-    @GetMapping("/animal={animal}&startDate={appointmentDateStart}&endDate={appointmentDateEnd}")
+    @GetMapping("/animalId")
     @ResponseStatus(HttpStatus.OK)
-    public List<AppointmentResponse> appointmentListByAnimalAndDateRange (@PathVariable("animal") String animalName,
-                                                                          @PathVariable("appointmentDateStart") LocalDate appointmentDateStart,
-                                                                          @PathVariable("appointmentDateEnd") LocalDate appointmentDateEnd) {
-        return this.appointmentService.appointmentListByAnimalAndDateRange(animalName, appointmentDateStart, appointmentDateEnd);
+    public ResultData<List<AppointmentResponse>> appointmentListByAnimalAndDateRange (@RequestParam("animalId") Long animalId,
+                                                                          @RequestParam("appointmentDateStart") LocalDate appointmentDateStart,
+                                                                          @RequestParam("appointmentDateEnd") LocalDate appointmentDateEnd) {
+        return this.appointmentService.appointmentListByAnimalAndDateRange(animalId, appointmentDateStart, appointmentDateEnd);
     }
 }

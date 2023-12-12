@@ -34,6 +34,6 @@ public class Vaccine {
     private LocalDate protectionFinishDate;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "vaccine_animal_id", referencedColumnName = "animal_id")
+    @JoinColumn(name = "vaccine_animal_id", referencedColumnName = "animal_id", nullable = false)
     private Animal animal;
 }

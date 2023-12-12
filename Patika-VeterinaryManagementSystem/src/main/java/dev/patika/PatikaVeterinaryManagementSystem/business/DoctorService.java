@@ -1,5 +1,10 @@
 package dev.patika.PatikaVeterinaryManagementSystem.business;
 
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.DuplicationException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.NotFoundException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultHelper;
+import dev.patika.PatikaVeterinaryManagementSystem.core.utilies.Message;
 import dev.patika.PatikaVeterinaryManagementSystem.dao.DoctorRepository;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.DoctorRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.DoctorResponse;
@@ -21,41 +26,30 @@ public class DoctorService {
         this.doctorMapper = doctorMapper;
     }
 
-    public DoctorResponse getById(Long id) {
-        Optional<Doctor> isDoctorExist = this.doctorRepository.findById(id);
-        if(isDoctorExist.isPresent()) {
-            return this.doctorMapper.asOutput(this.doctorRepository.findById(id).orElseThrow());
-        }
-        throw new RuntimeException("Girdiğiniz ID'ye sahip bir doktor bulunamadı.");
+    public ResultData<DoctorResponse> getById(Long id) {
+        return ResultHelper.success(this.doctorMapper.asOutput(this.doctorRepository.findById(id).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND))));
     }
 
-    public List<DoctorResponse> findAll() {
-        return this.doctorMapper.asOutput(this.doctorRepository.findAll());
+    public ResultData<List<DoctorResponse>> findAll() {
+        return ResultHelper.success(this.doctorMapper.asOutput(this.doctorRepository.findAll()));
     }
 
-    public DoctorResponse save(DoctorRequest request) {
+    public ResultData<DoctorResponse> save(DoctorRequest request) {
         Optional<Doctor> isDoctorExist = this.doctorRepository.findByNameAndPhone(request.getName(), request.getPhone());
-        if(isDoctorExist.isPresent()) {
-            throw new RuntimeException("Eklemeye çalıştığınız doktor daha önce eklenmiş.");
+        if(isDoctorExist.isEmpty()) {
+            return ResultHelper.created(this.doctorMapper.asOutput(this.doctorRepository.save(this.doctorMapper.asEntity(request))));
         }
-        return this.doctorMapper.asOutput(this.doctorRepository.save(this.doctorMapper.asEntity(request)));
+        throw new DuplicationException("Eklemeye çalıştığınız doktor daha önce eklenmiş.");
     }
 
     public void delete(Long id) {
-        Optional<Doctor> isDoctorExist = this.doctorRepository.findById(id);
-        if(isDoctorExist.isPresent()) {
-            this.doctorRepository.delete(isDoctorExist.get());
-        }
-        throw new RuntimeException(id + " id'li doktor bulunamadı.");
+        this.doctorRepository.delete(this.doctorRepository.findById(id).orElseThrow(() -> new NotFoundException(Message.NOT_FOUND)));
     }
 
-    public DoctorResponse update(Long id, DoctorRequest request) {
-        Optional<Doctor> doctorFromDb = this.doctorRepository.findById(id);
-        if(doctorFromDb.isPresent()) {
-            Doctor doctor = doctorFromDb.get();
-            doctorMapper.update(doctor, request);
-            return this.doctorMapper.asOutput(this.doctorRepository.save(doctor));
-        }
-        throw new RuntimeException("Güncellemeye çalıştığınız doktor sistemde bulunamadı.");
+    public ResultData<DoctorResponse> update(Long id, DoctorRequest request) {
+        Doctor doctor = this.doctorRepository.findById(id).orElseThrow(() -> new NotFoundException(Message.NOT_FOUND));
+        doctorMapper.update(doctor, request);
+        return ResultHelper.success(this.doctorMapper.asOutput(this.doctorRepository.save(doctor)));
     }
 }

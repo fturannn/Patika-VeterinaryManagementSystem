@@ -1,8 +1,11 @@
 package dev.patika.PatikaVeterinaryManagementSystem.api;
 
 import dev.patika.PatikaVeterinaryManagementSystem.business.DoctorService;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultHelper;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.DoctorRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.DoctorResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,19 +22,19 @@ public class DoctorController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public DoctorResponse getById(@PathVariable("id") Long id) {
+    public ResultData<DoctorResponse> getById(@PathVariable("id") Long id) {
         return this.doctorService.getById(id);
     }
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<DoctorResponse> findAll() {
+    public ResultData<List<DoctorResponse>> findAll() {
         return this.doctorService.findAll();
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public DoctorResponse save(@RequestBody DoctorRequest request) {
+    public ResultData<DoctorResponse> save(@Valid @RequestBody DoctorRequest request) {
         return this.doctorService.save(request);
     }
 
@@ -43,7 +46,7 @@ public class DoctorController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public DoctorResponse update(@PathVariable("id") Long id, @RequestBody DoctorRequest request) {
+    public ResultData<DoctorResponse> update(@Valid @PathVariable("id") Long id, @RequestBody DoctorRequest request) {
         return this.doctorService.update(id, request);
     }
 }

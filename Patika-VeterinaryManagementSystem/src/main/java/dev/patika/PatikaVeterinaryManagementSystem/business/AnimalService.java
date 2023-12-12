@@ -1,9 +1,15 @@
 package dev.patika.PatikaVeterinaryManagementSystem.business;
 
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.DuplicationException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.NotFoundException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultHelper;
+import dev.patika.PatikaVeterinaryManagementSystem.core.utilies.Message;
 import dev.patika.PatikaVeterinaryManagementSystem.dao.AnimalRepository;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.AnimalRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.AnimalResponse;
 import dev.patika.PatikaVeterinaryManagementSystem.entities.Animal;
+import dev.patika.PatikaVeterinaryManagementSystem.entities.Customer;
 import dev.patika.PatikaVeterinaryManagementSystem.mapper.AnimalMapper;
 import org.springframework.stereotype.Service;
 
@@ -21,57 +27,53 @@ public class AnimalService {
         this.animalMapper = animalMapper;
     }
 
-    public AnimalResponse getById(Long id) {
-        Optional<Animal> isAnimalExist = this.animalRepository.findById(id);
-        if(isAnimalExist.isPresent()) {
-            return this.animalMapper.asOutput(this.animalRepository.findById(id).orElseThrow());
-        }
-        throw new RuntimeException("Girdiğiniz ID'ye ait bir hayvan bulunamadı.");
+    public ResultData<AnimalResponse> getById(Long id) {
+        return ResultHelper.success(this.animalMapper.asOutput(this.animalRepository.findById(id).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND))));
     }
 
-    public List<AnimalResponse> findAll() {
-        return this.animalMapper.asOutput(this.animalRepository.findAll());
+    public ResultData<List<AnimalResponse>> findAll() {
+        return ResultHelper.success(this.animalMapper.asOutput(this.animalRepository.findAll()));
     }
 
-    public AnimalResponse save(AnimalRequest request) {
-        Optional<Animal> isAnimalExist = this.animalRepository.findById(request.getId());
-        if(isAnimalExist.isEmpty()) {
-            return this.animalMapper.asOutput(this.animalRepository.save(animalMapper.asEntity(request)));
+    public ResultData<AnimalResponse> save(AnimalRequest request) {
+        Optional<Customer> isCustomerExist = this.animalRepository.findCustomerByCustomerId(request.getCustomer().getId());
+        if(isCustomerExist.isEmpty()) {
+            throw new NotFoundException("ID'si "+ request.getCustomer().getId() + " olan müşteri bulunamadı");
+        } else {
+            Optional<Animal> isAnimalExist = this.animalRepository.findByNameAndSpeciesAndBreed(request.getName(), request.getSpecies(), request.getBreed());
+            if(isAnimalExist.isEmpty()) {
+                return ResultHelper.created(this.animalMapper.asOutput(this.animalRepository.save(this.animalMapper.asEntity(request))));
+            }
+            throw new DuplicationException("Eklemeye çalıştığınız hayvan daha önce eklenmiş.");
         }
-        throw new RuntimeException("Eklemeye çalıştığınız hayvan daha önce eklenmiş.");
     }
 
     public void delete(Long id) {
-        Optional<Animal> isAnimalExist = this.animalRepository.findById(id);
-        if(isAnimalExist.isPresent()) {
-            animalRepository.delete(isAnimalExist.get());
-        }
-        throw new RuntimeException(id + "'li hayvan bulunamadı.");
+        animalRepository.delete(this.animalRepository.findById(id).orElseThrow(() -> new NotFoundException(Message.NOT_FOUND)));
     }
 
-    public AnimalResponse update(Long id, AnimalRequest request) {
-        Optional<Animal> animalFromDb = this.animalRepository.findById(id);
-        if(animalFromDb.isPresent()) {
-            Animal animal = animalFromDb.get();
+    public ResultData<AnimalResponse> update(Long id, AnimalRequest request) {
+        Optional<Customer> isCustomerExist = this.animalRepository.findCustomerByCustomerId(request.getCustomer().getId());
+        if(isCustomerExist.isEmpty()) {
+            throw new NotFoundException("ID'si "+ request.getCustomer().getId() + " olan müşteri bulunamadı");
+        } else {
+            Animal animal = this.animalRepository.findById(id).orElseThrow(() -> new NotFoundException(Message.NOT_FOUND));
             animalMapper.update(animal, request);
-            return this.animalMapper.asOutput(animalRepository.save(animal));
+            return ResultHelper.success(this.animalMapper.asOutput(animalRepository.save(animal)));
         }
-        throw new RuntimeException("Güncellemeye çalıştığınız hayvan sistemde bulunamadı.");
     }
 
-    public AnimalResponse findByName(String name) {
-        Optional<Animal> animalFromDb = this.animalRepository.findByName(name);
-        if(animalFromDb.isPresent()) {
-            return this.animalMapper.asOutput(animalFromDb.get());
-        }
-        throw new RuntimeException(name + " isimli hayvan sistemde bulunamadı.");
+    public ResultData<AnimalResponse> findByName(String name) {
+        Animal animal = this.animalRepository.findByName(name).orElseThrow(() -> new NotFoundException(Message.NOT_FOUND));
+        return ResultHelper.success(this.animalMapper.asOutput(animal));
     }
 
-    public List<AnimalResponse> findAnimalsByCustomerName(String customerName) {
-        List<Animal> animalList = this.animalRepository.findAnimalsByCustomerName(customerName);
+    public ResultData<List<AnimalResponse>> findAnimalsByCustomerName(String customerName) {
+        List<Animal> animalList = this.animalRepository.findByCustomerName(customerName);
         if(!animalList.isEmpty()) {
-            return this.animalMapper.asOutput(this.animalRepository.findAnimalsByCustomerName(customerName));
+            return ResultHelper.success(this.animalMapper.asOutput(this.animalRepository.findByCustomerName(customerName)));
         }
-        throw new RuntimeException(customerName + " isimli kullanıcıya ait hayvan bulunamadı.");
+        throw new NotFoundException(Message.NOT_FOUND);
     }
 }

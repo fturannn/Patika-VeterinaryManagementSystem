@@ -1,10 +1,19 @@
 package dev.patika.PatikaVeterinaryManagementSystem.business;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.DoctorAppointmentException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.HourTypeException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.NotFoundException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultHelper;
+import dev.patika.PatikaVeterinaryManagementSystem.core.utilies.Message;
 import dev.patika.PatikaVeterinaryManagementSystem.dao.AppointmentRepository;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.AppointmentRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.AppointmentResponse;
+import dev.patika.PatikaVeterinaryManagementSystem.entities.Animal;
 import dev.patika.PatikaVeterinaryManagementSystem.entities.Appointment;
 import dev.patika.PatikaVeterinaryManagementSystem.entities.AvailableDate;
+import dev.patika.PatikaVeterinaryManagementSystem.entities.Doctor;
 import dev.patika.PatikaVeterinaryManagementSystem.mapper.AppointmentMapper;
 import org.springframework.stereotype.Service;
 
@@ -25,78 +34,71 @@ public class AppointmentService {
         this.appointmentMapper = appointmentMapper;
     }
 
-    public AppointmentResponse getById(Long id) {
-        Optional<Appointment> isAppointmentExist = this.appointmentRepository.findById(id);
-        if(isAppointmentExist.isPresent()) {
-            return this.appointmentMapper.asOutput(this.appointmentRepository.findById(id).orElseThrow());
-        }
-        throw new RuntimeException("Girdiğiniz ID'ye sahip bir randevu bulunamadı.");
+    public ResultData<AppointmentResponse> getById(Long id) {
+        return ResultHelper.success(this.appointmentMapper.asOutput(this.appointmentRepository.findById(id).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND))));
     }
 
-    public List<AppointmentResponse> findAll() {
-        return this.appointmentMapper.asOutput(this.appointmentRepository.findAll());
+    public ResultData<List<AppointmentResponse>> findAll() {
+        return ResultHelper.success(this.appointmentMapper.asOutput(this.appointmentRepository.findAll()));
     }
 
-    public AppointmentResponse save(LocalDate date, String hour, AppointmentRequest request) {
-        String time = "";
-        if(Integer.parseInt(hour) >= 24 && Integer.parseInt(hour) < 0) {
-            throw new RuntimeException("Lütfen geçerli bir saat giriniz.");
+    public ResultData<AppointmentResponse> save(AppointmentRequest request) {
+        Optional<Doctor> isDoctorExist = this.appointmentRepository.findDoctorByDoctorId(request.getDoctor().getId());
+        Optional<Animal> isAnimalExist = this.appointmentRepository.findAnimalByAnimalId(request.getAnimal().getId());
+        if(isDoctorExist.isEmpty() || isAnimalExist.isEmpty()) {
+            throw new NotFoundException("Doktor ya da Hayvan ID'si uyumsuz");
         } else {
-            if(Integer.parseInt(hour) < 10) {
-                time = date + " 0" + hour + ":00";
-            } else {
-                time = date + " " + hour + ":00";
+            Optional<Appointment> isAppointmentExist = this.appointmentRepository.findByAppointmentDateAndDoctorId(request.getAppointmentDate(), request.getDoctor().getId());
+            List<AvailableDate> availableDates = this.appointmentRepository.findAvailableDateByDoctorId(request.getDoctor().getId());
+
+            for(AvailableDate obj : availableDates) {
+                if(Objects.equals(obj.getAvailableDate(), request.getAppointmentDate().toLocalDate()) && isAppointmentExist.isEmpty()) {
+                    return ResultHelper.created(this.appointmentMapper.asOutput(this.appointmentRepository.save(this.appointmentMapper.asEntity(request))));
+                }
             }
+
+            throw new DoctorAppointmentException(request.getDoctor().getId() + " ID'li doktor belirlediğiniz tarih ve saatte müsait değildir.");
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime dateTime = LocalDateTime.parse(time, formatter);
-        Optional<Appointment> isAppointmentExist = this.appointmentRepository.findByAppointmentDateAndDoctorId(dateTime, request.getDoctor().getId());
-        List<AvailableDate> availableDates = request.getDoctor().getAvailableDateList();
-        for(AvailableDate obj : availableDates) {
-            if(Objects.equals(obj.getAvailableDate(), date) && isAppointmentExist.isEmpty()) {
-                return this.appointmentMapper.asOutput(this.appointmentRepository.save(this.appointmentMapper.asEntity(request)));
-            }
-        }
-        throw new RuntimeException("Doktor " + request.getDoctor().getName() + " belirlediğiniz tarih ve saatte müsait değildir.");
     }
 
     public void delete(Long id) {
-        Optional<Appointment> isAppointmentExist = this.appointmentRepository.findById(id);
-        if(isAppointmentExist.isPresent()) {
-            this.appointmentRepository.delete(isAppointmentExist.get());
-        }
-        throw new RuntimeException(id + " id'li randevu bulunamadı.");
+        this.appointmentRepository.delete(this.appointmentRepository.findById(id).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND)));
     }
 
-    public AppointmentResponse update(Long id, AppointmentRequest request) {
-        Optional<Appointment> appointmentFromDb = this.appointmentRepository.findById(id);
-        if(appointmentFromDb.isPresent()) {
-            Appointment appointment = appointmentFromDb.get();
+    public ResultData<AppointmentResponse> update(Long id, AppointmentRequest request) {
+        Optional<Doctor> isDoctorExist = this.appointmentRepository.findDoctorByDoctorId(request.getDoctor().getId());
+        Optional<Animal> isAnimalExist = this.appointmentRepository.findAnimalByAnimalId(request.getAnimal().getId());
+        if(isDoctorExist.isEmpty() || isAnimalExist.isEmpty()) {
+            throw new NotFoundException("Doktor ya da Hayvan ID'si uyumsuz");
+        } else {
+            Appointment appointment = this.appointmentRepository.findById(id).orElseThrow(() ->
+                    new NotFoundException("Güncellemeye çalıştığınız randevu sistemde bulunamadı."));
             this.appointmentMapper.update(appointment, request);
-            return this.appointmentMapper.asOutput(this.appointmentRepository.save(appointment));
+            return ResultHelper.success(this.appointmentMapper.asOutput(this.appointmentRepository.save(appointment)));
         }
-        throw new RuntimeException("Güncellemeye çalıştığınız randevu sistemde bulunamadı.");
     }
 
-    public List<AppointmentResponse> appointmentListByDoctorAndDateRange(String doctorName, LocalDate appointmentDateStart, LocalDate appointmentDateEnd) {
+    public ResultData<List<AppointmentResponse>> appointmentListByDoctorAndDateRange(Long doctorId, LocalDate appointmentDateStart, LocalDate appointmentDateEnd) {
         LocalDateTime appointmentStart = appointmentDateStart.atStartOfDay();
         LocalDateTime appointmentEnd = appointmentDateEnd.atStartOfDay();
-        List<Appointment> appointmentList= this.appointmentRepository.findByDoctorNameAndAppointmentDateBetween(doctorName, appointmentStart, appointmentEnd);
+        List<Appointment> appointmentList= this.appointmentRepository.findByDoctorIdAndAppointmentDateBetween(doctorId, appointmentStart, appointmentEnd);
 
         if(appointmentList.isEmpty()) {
-            throw new RuntimeException("Doktor " + doctorName + " için girilen zaman aralıklarında randevu yoktur.");
+            throw new DoctorAppointmentException(doctorId + " ID'li doktor için girilen zaman aralıklarında randevu yoktur.");
         }
-        return this.appointmentMapper.asOutput(appointmentList);
+        return ResultHelper.success(this.appointmentMapper.asOutput(appointmentList));
     }
 
-    public List<AppointmentResponse> appointmentListByAnimalAndDateRange(String animalName, LocalDate appointmentDateStart, LocalDate appointmentDateEnd) {
+    public ResultData<List<AppointmentResponse>> appointmentListByAnimalAndDateRange(Long animalId, LocalDate appointmentDateStart, LocalDate appointmentDateEnd) {
         LocalDateTime appointmentStart = appointmentDateStart.atStartOfDay();
         LocalDateTime appointmentEnd = appointmentDateEnd.atStartOfDay();
-        List<Appointment> appointmentList= this.appointmentRepository.findByAnimalNameAndAppointmentDateBetween(animalName, appointmentStart, appointmentEnd);
+        List<Appointment> appointmentList= this.appointmentRepository.findByAnimalIdAndAppointmentDateBetween(animalId, appointmentStart, appointmentEnd);
 
         if(appointmentList.isEmpty()) {
-            throw new RuntimeException(animalName + " için girilen zaman aralıklarında randevu yoktur.");
+            throw new DoctorAppointmentException(animalId + " ID'li hayvan için girilen zaman aralıklarında randevu yoktur.");
         }
-        return this.appointmentMapper.asOutput(appointmentList);
+        return ResultHelper.success(this.appointmentMapper.asOutput(appointmentList));
     }
 }

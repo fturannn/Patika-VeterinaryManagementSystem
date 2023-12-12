@@ -1,8 +1,11 @@
 package dev.patika.PatikaVeterinaryManagementSystem.api;
 
 import dev.patika.PatikaVeterinaryManagementSystem.business.VaccineService;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultHelper;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.VaccineRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.VaccineResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +24,19 @@ public class VaccineController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public VaccineResponse getById(@PathVariable("id") Long id) {
+    public ResultData<VaccineResponse> getById(@PathVariable("id") Long id) {
         return this.vaccineService.getById(id);
+    }
+
+    @GetMapping()
+    @ResponseStatus(HttpStatus.OK)
+    public ResultData<List<VaccineResponse>> findAll() {
+        return this.vaccineService.findAll();
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public VaccineResponse save(@RequestBody VaccineRequest request) {
+    public ResultData<VaccineResponse> save(@Valid @RequestBody VaccineRequest request) {
         return this.vaccineService.save(request);
     }
 
@@ -39,20 +48,20 @@ public class VaccineController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public VaccineResponse update(@PathVariable("id") Long id, @RequestBody VaccineRequest request) {
+    public ResultData<VaccineResponse> update(@Valid @PathVariable("id") Long id, @RequestBody VaccineRequest request) {
         return this.vaccineService.update(id, request);
     }
 
-    @GetMapping("/upcomings/start={startDate}&end={endDate}")
+    @GetMapping("/upcomings")
     @ResponseStatus(HttpStatus.OK)
-    public List<VaccineResponse> upcomingVaccines(@PathVariable("startDate") LocalDate startDate,
-                                          @PathVariable("endDate") LocalDate endDate) {
+    public ResultData<List<VaccineResponse>> upcomingVaccines(@RequestParam("startDate") LocalDate startDate,
+                                          @RequestParam("endDate") LocalDate endDate) {
         return this.vaccineService.upcomingVaccines(startDate, endDate);
     }
 
     @GetMapping("/animalId={animalId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<VaccineResponse> getByAnimalId(@PathVariable("animalId") Long animalId) {
+    public ResultData<List<VaccineResponse>> getByAnimalId(@PathVariable("animalId") Long animalId) {
         return this.vaccineService.findByAnimalId(animalId);
     }
 }

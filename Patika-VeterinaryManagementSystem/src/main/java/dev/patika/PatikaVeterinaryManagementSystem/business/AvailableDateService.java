@@ -1,9 +1,16 @@
 package dev.patika.PatikaVeterinaryManagementSystem.business;
 
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.DuplicationException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.exception.NotFoundException;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultHelper;
+import dev.patika.PatikaVeterinaryManagementSystem.core.utilies.Message;
 import dev.patika.PatikaVeterinaryManagementSystem.dao.AvailableDateRepository;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.AvailableDateRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.AvailableDateResponse;
 import dev.patika.PatikaVeterinaryManagementSystem.entities.AvailableDate;
+import dev.patika.PatikaVeterinaryManagementSystem.entities.Customer;
+import dev.patika.PatikaVeterinaryManagementSystem.entities.Doctor;
 import dev.patika.PatikaVeterinaryManagementSystem.mapper.AvailableDateMapper;
 import org.springframework.stereotype.Service;
 
@@ -20,41 +27,42 @@ public class AvailableDateService {
         this.availableDateMapper = availableDateMapper;
     }
 
-    public AvailableDateResponse getById(Long id) {
-        Optional<AvailableDate> isAvailableDateExist = this.availableDateRepository.findById(id);
-        if(isAvailableDateExist.isPresent()) {
-            return this.availableDateMapper.asOutput(this.availableDateRepository.findById(id).orElseThrow());
-        }
-        throw new RuntimeException("Girdiğiniz ID'li bir müsait gün bulunamadı.");
+    public ResultData<AvailableDateResponse> getById(Long id) {
+        return ResultHelper.success(this.availableDateMapper.asOutput(this.availableDateRepository.findById(id).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND))));
+
     }
 
-    public List<AvailableDateResponse> findAll() {
-        return this.availableDateMapper.asOutput(this.availableDateRepository.findAll());
+    public ResultData<List<AvailableDateResponse>> findAll() {
+        return ResultHelper.success(this.availableDateMapper.asOutput(this.availableDateRepository.findAll()));
     }
 
-    public AvailableDateResponse save(AvailableDateRequest request) {
-        Optional<AvailableDate> isAvailableDateExist = this.availableDateRepository.findByAvailableDate(request.getAvailableDate());
-        if(isAvailableDateExist.isEmpty()) {
-            return this.availableDateMapper.asOutput(this.availableDateRepository.save(this.availableDateMapper.asEntity(request)));
+    public ResultData<AvailableDateResponse> save(AvailableDateRequest request) {
+        Optional<Doctor> isDoctorExist = this.availableDateRepository.findDoctorByDoctorId(request.getDoctor().getId());
+        if(isDoctorExist.isEmpty()) {
+            throw new NotFoundException("ID'si "+ request.getDoctor().getId() + " olan doktor bulunamadı");
+        } else {
+            Optional<AvailableDate> isAvailableDateExist = this.availableDateRepository.findByAvailableDateAndDoctorId(request.getAvailableDate(), request.getDoctor().getId());
+            if(isAvailableDateExist.isEmpty()) {
+                return ResultHelper.created(this.availableDateMapper.asOutput(this.availableDateRepository.save(this.availableDateMapper.asEntity(request))));
+            }
+            throw new DuplicationException("Eklemeye çalıştığınız tarih daha önce eklenmiş.");
         }
-        throw new RuntimeException("Eklemeye çalıştığınız tarih daha önce eklenmiş.");
     }
 
     public void delete(Long id) {
-        Optional<AvailableDate> isAvailableDateExist = this.availableDateRepository.findById(id);
-        if(isAvailableDateExist.isPresent()) {
-            this.availableDateRepository.delete(isAvailableDateExist.get());
-        }
-        throw new RuntimeException(id + " id'li müsait gün bulunamadı.");
+        this.availableDateRepository.delete(this.availableDateRepository.findById(id).orElseThrow(() ->
+                new NotFoundException(Message.NOT_FOUND)));
     }
 
-    public AvailableDateResponse update(Long id, AvailableDateRequest request) {
-        Optional<AvailableDate> availableDateFromDb = this.availableDateRepository.findById(id);
-        if(availableDateFromDb.isPresent()) {
-            AvailableDate availableDate = availableDateFromDb.get();
+    public ResultData<AvailableDateResponse> update(Long id, AvailableDateRequest request) {
+        Optional<Doctor> isDoctorExist = this.availableDateRepository.findDoctorByDoctorId(request.getDoctor().getId());
+        if(isDoctorExist.isEmpty()) {
+            throw new NotFoundException("ID'si "+ request.getDoctor().getId() + " olan doktor bulunamadı");
+        } else {
+            AvailableDate availableDate = this.availableDateRepository.findById(id).orElseThrow(() -> new NotFoundException(Message.NOT_FOUND));
             this.availableDateMapper.update(availableDate, request);
-            return this.availableDateMapper.asOutput(this.availableDateRepository.save(availableDate));
+            return ResultHelper.success(this.availableDateMapper.asOutput(this.availableDateRepository.save(availableDate)));
         }
-        throw new RuntimeException("Güncellemeye çalıştığınız tarih sistemde bulunamadı.");
     }
 }

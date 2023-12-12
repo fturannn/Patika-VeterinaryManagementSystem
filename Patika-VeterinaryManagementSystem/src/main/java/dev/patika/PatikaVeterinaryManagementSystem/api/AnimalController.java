@@ -1,8 +1,10 @@
 package dev.patika.PatikaVeterinaryManagementSystem.api;
 
 import dev.patika.PatikaVeterinaryManagementSystem.business.AnimalService;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.AnimalRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.AnimalResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,19 +22,19 @@ public class AnimalController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public AnimalResponse getById(@PathVariable("id") Long id) {
+    public ResultData<AnimalResponse> getById(@PathVariable("id") Long id) {
         return this.animalService.getById(id);
     }
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<AnimalResponse> findAll() {
+    public ResultData<List<AnimalResponse>> findAll() {
         return this.animalService.findAll();
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public AnimalResponse save(@RequestBody AnimalRequest request) {
+    public ResultData<AnimalResponse> save(@Valid @RequestBody AnimalRequest request) {
         return this.animalService.save(request);
     }
 
@@ -44,19 +46,19 @@ public class AnimalController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public AnimalResponse update(@PathVariable("id") Long id, @RequestBody AnimalRequest request) {
+    public ResultData<AnimalResponse> update(@Valid @PathVariable("id") Long id, @RequestBody AnimalRequest request) {
         return this.animalService.update(id, request);
     }
 
     @GetMapping("/name={name}")
     @ResponseStatus(HttpStatus.OK)
-    public AnimalResponse findByName(@PathVariable("name") String name) {
+    public ResultData<AnimalResponse> findByName(@PathVariable("name") String name) {
         return this.animalService.findByName(name);
     }
 
     @GetMapping("/customerName={customerName}")
     @ResponseStatus(HttpStatus.OK)
-    public List<AnimalResponse> findAnimalsByCustomerName(@PathVariable("customerName") String customerName) {
+    public ResultData<List<AnimalResponse>> findAnimalsByCustomerName(@PathVariable("customerName") String customerName) {
         return this.animalService.findAnimalsByCustomerName(customerName);
     }
 }

@@ -1,9 +1,11 @@
 package dev.patika.PatikaVeterinaryManagementSystem.api;
 
 import dev.patika.PatikaVeterinaryManagementSystem.business.CustomerService;
+import dev.patika.PatikaVeterinaryManagementSystem.core.result.ResultData;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.request.CustomerRequest;
 import dev.patika.PatikaVeterinaryManagementSystem.dto.response.CustomerResponse;
 import dev.patika.PatikaVeterinaryManagementSystem.entities.Customer;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,19 +24,19 @@ public class CustomerController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CustomerResponse getById(@PathVariable("id") Long id) {
+    public ResultData<CustomerResponse> getById(@PathVariable("id") Long id) {
         return this.customerService.getById(id);
     }
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<CustomerResponse> findAll() {
+    public ResultData<List<CustomerResponse>> findAll() {
         return this.customerService.findAll();
     }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
-    public CustomerResponse save(@RequestBody CustomerRequest request) {
+    public ResultData<CustomerResponse> save(@Valid @RequestBody CustomerRequest request) {
         return this.customerService.save(request);
     }
 
@@ -46,13 +48,13 @@ public class CustomerController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CustomerResponse update(@PathVariable("id") Long id, @RequestBody CustomerRequest request) {
+    public ResultData<CustomerResponse> update(@PathVariable("id") Long id, @RequestBody CustomerRequest request) {
         return this.customerService.update(id, request);
     }
 
     @GetMapping("/name={name}")
     @ResponseStatus(HttpStatus.OK)
-    public CustomerResponse getByName(@PathVariable("name") String name) {
+    public ResultData<CustomerResponse> getByName(@PathVariable("name") String name) {
         return this.customerService.findByName(name);
     }
 }
