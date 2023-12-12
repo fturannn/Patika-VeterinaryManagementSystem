@@ -32,6 +32,7 @@ public class AnimalController {
         return this.animalService.findAll();
     }
 
+    // Kriter 11: Proje isterlerine göre hayvan kaydedilir
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ResultData<AnimalResponse> save(@Valid @RequestBody AnimalRequest request) {
@@ -50,12 +51,14 @@ public class AnimalController {
         return this.animalService.update(id, request);
     }
 
+    // Kriter 16: Hayvanlar isme göre filtrelenir
     @GetMapping("/name={name}")
     @ResponseStatus(HttpStatus.OK)
     public ResultData<AnimalResponse> findByName(@PathVariable("name") String name) {
         return this.animalService.findByName(name);
     }
 
+    // Kriter 18: Girilen hayvan sahibinin sistemde kayıtlı tüm hayvanlarını görüntülenmesi yapılır
     @GetMapping("/customerName={customerName}")
     @ResponseStatus(HttpStatus.OK)
     public ResultData<List<AnimalResponse>> findAnimalsByCustomerName(@PathVariable("customerName") String customerName) {

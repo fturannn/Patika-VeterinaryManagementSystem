@@ -31,6 +31,7 @@ public class AvailableDateController {
         return this.availableDateService.findAll();
     }
 
+    // Kriter 13: Proje isterlerine göre doktor müsait günü kaydedilir.
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ResultData<AvailableDateResponse> save(@Valid @RequestBody AvailableDateRequest request) {

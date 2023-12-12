@@ -36,6 +36,8 @@ public class VaccineService {
         return ResultHelper.success(this.vaccineMapper.asOutput(this.vaccineRepository.findAll()));
     }
 
+    // Kriter 19: Yeni aşı kaydetme işleminde koruyuculuk bitiş tarihi kontrolü yapılır.
+    // Koruyuculuk tarihi bitmiş aşıların kaydı yapılıp, koruyuculuğu bitmemiş aşıların kaydı engellenir
     public ResultData<VaccineResponse> save(VaccineRequest request) {
         List<Vaccine> vaccineList = this.vaccineRepository.findByCodeAndAnimalId(request.getCode(), request.getAnimal().getId());
         if(!vaccineList.isEmpty() && vaccineList.getLast().getProtectionFinishDate().isAfter(LocalDate.now())) {

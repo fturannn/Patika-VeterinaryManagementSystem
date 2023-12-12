@@ -32,6 +32,7 @@ public class DoctorController {
         return this.doctorService.findAll();
     }
 
+    // Kriter 12: Proje isterlerine göre doktor kaydedilir
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ResultData<DoctorResponse> save(@Valid @RequestBody DoctorRequest request) {

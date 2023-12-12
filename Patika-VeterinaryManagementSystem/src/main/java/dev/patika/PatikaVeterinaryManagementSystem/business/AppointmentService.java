@@ -43,6 +43,8 @@ public class AppointmentService {
         return ResultHelper.success(this.appointmentMapper.asOutput(this.appointmentRepository.findAll()));
     }
 
+    // Kriter 22: Randevu oluşturulurken, doktorun o saatte başka bir randevusu var mı, doktorun müsait günü var mı  kontrolü yapılır
+    // Sadece randevusu yoksa ve müsait günü varsa randevu kaydına izin verilir
     public ResultData<AppointmentResponse> save(AppointmentRequest request) {
         Optional<Doctor> isDoctorExist = this.appointmentRepository.findDoctorByDoctorId(request.getDoctor().getId());
         Optional<Animal> isAnimalExist = this.appointmentRepository.findAnimalByAnimalId(request.getAnimal().getId());

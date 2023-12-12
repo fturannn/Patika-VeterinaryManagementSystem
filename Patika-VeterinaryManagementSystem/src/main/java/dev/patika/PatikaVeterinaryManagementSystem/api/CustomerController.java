@@ -34,6 +34,7 @@ public class CustomerController {
         return this.customerService.findAll();
     }
 
+    // Kriter 10: Proje isterlerine göre hayvan sahibi kaydedilir
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ResultData<CustomerResponse> save(@Valid @RequestBody CustomerRequest request) {
@@ -52,6 +53,7 @@ public class CustomerController {
         return this.customerService.update(id, request);
     }
 
+    // Kriter 17: Hayvan sahipleri isme göre filtrelenir
     @GetMapping("/name={name}")
     @ResponseStatus(HttpStatus.OK)
     public ResultData<CustomerResponse> getByName(@PathVariable("name") String name) {

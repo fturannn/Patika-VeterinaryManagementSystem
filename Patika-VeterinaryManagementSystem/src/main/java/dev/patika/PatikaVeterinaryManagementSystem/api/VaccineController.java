@@ -34,6 +34,7 @@ public class VaccineController {
         return this.vaccineService.findAll();
     }
 
+    // Kriter 15: Proje isterlerine göre hayvana ait aşı kaydedilir
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ResultData<VaccineResponse> save(@Valid @RequestBody VaccineRequest request) {
@@ -52,6 +53,7 @@ public class VaccineController {
         return this.vaccineService.update(id, request);
     }
 
+    // Kriter 21: Hayvanların aşı kayıtları, girilen tarih aralığına göre doğru şekilde listelenir
     @GetMapping("/upcomings")
     @ResponseStatus(HttpStatus.OK)
     public ResultData<List<VaccineResponse>> upcomingVaccines(@RequestParam("startDate") LocalDate startDate,
@@ -59,6 +61,7 @@ public class VaccineController {
         return this.vaccineService.upcomingVaccines(startDate, endDate);
     }
 
+    // Kriter 20: Belirli bir hayvana ait tüm aşı kayıtları (sadece bir hayvanın tüm aşı kayıtları) listelenir
     @GetMapping("/animalId={animalId}")
     @ResponseStatus(HttpStatus.OK)
     public ResultData<List<VaccineResponse>> getByAnimalId(@PathVariable("animalId") Long animalId) {

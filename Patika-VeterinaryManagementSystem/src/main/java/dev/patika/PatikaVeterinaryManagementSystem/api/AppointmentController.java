@@ -33,6 +33,7 @@ public class AppointmentController {
         return this.appointmentService.findAll();
     }
 
+    // Kriter 14: Proje isterlerine göre randevu kaydedilir
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     public ResultData<AppointmentResponse> save(@RequestBody AppointmentRequest request) {
@@ -51,6 +52,7 @@ public class AppointmentController {
         return this.appointmentService.update(id, request);
     }
 
+    // Kriter 24: Randevular kullanıcı tarafından girilen tarih aralığına ve doktora göre filtrelenir
     @GetMapping("/doctorId")
     @ResponseStatus(HttpStatus.OK)
     public ResultData<List<AppointmentResponse>> appointmentListByDoctorAndDateRange (@RequestParam("doctorId") Long doctorId,
@@ -59,6 +61,7 @@ public class AppointmentController {
         return this.appointmentService.appointmentListByDoctorAndDateRange(doctorId, appointmentDateStart, appointmentDateEnd);
     }
 
+    // Kriter 23: Randevular kullanıcı tarafından girilen tarih aralığına ve hayvana göre filtrelenir
     @GetMapping("/animalId")
     @ResponseStatus(HttpStatus.OK)
     public ResultData<List<AppointmentResponse>> appointmentListByAnimalAndDateRange (@RequestParam("animalId") Long animalId,
